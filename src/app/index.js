@@ -18,4 +18,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  title: {
+    fontFamily: "light",
+    fontSize: 20,
+  },
 });
