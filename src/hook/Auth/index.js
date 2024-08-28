@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import { useUsersDatabase} from "../../database/useUsersDatabase"
+import { ActivityIndicator, Text, View } from "react-native";
 
 const AuthContext = createContext({})
 
@@ -16,11 +17,37 @@ export function AuthProvider({ children }) {
       role: null,  
     });
 
-const {authUser} = useUsersDatabase
+const {authUser} = useUsersDatabase();
+
+    useEffect(() => {
+        const loadStoragedData = async () => {
+            const storagedUser = await AsyncStorage.getItem("@payment:user");
+            if (storagedUser) {
+                setUser({
+                    authenticated: true,
+                    user: JSON.parse(userStoraged),
+                    role: JSON.parse(userStoraged).role,
+                });
+            } else {
+                setUser({
+                    authenticated: false,
+                    user: null,
+                    role: null,
+                });
+            }
+        };
+
+        loadStoragedData();
+    }, []);
+
+    useEffect(() =>{
+        console.log("AuthProvider", user);
+    }, [user]);
 
 };
-    const signIn = async (email, password) => {
+    const signIn = async ({email, password}) => {
         const response = await authUser({email, password});
+        console.log(response);
         
         if (!response) {
             setUser({
@@ -28,7 +55,11 @@ const {authUser} = useUsersDatabase
                 user: null,
                 role: null,
                 });
+                throw new Error("Usuário ou senha inválidos");
         }   
+
+        await AsyncStorage.setItem("@payment:user", JSON.stringify(response));
+
         setUser({
             authenticated: true,
             user: response,
@@ -36,17 +67,27 @@ const {authUser} = useUsersDatabase
         });
     };
     const signOut = async () => {
+        await AsyncStorage.removeItem("@payment:user");
         setUser({});
     };
+    useEffect(() => {
+        console.log ("AuthProvider ", user);
+    }, [user]);
+
+    if (!loaded && !error) {
+        return ( <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+            <Text style={{ fontSize: 28, marginTop: 15}}>
+                Carregando Dados do Usuario
+            </Text>
+            <ActivityIndicator size="large" color="#0000ff" />;
+            </View>
+            );
+    }
 
     return ( <AuthContext.Provider value={{ user, signIn, signOut}}>
         {children}
         </AuthContext.Provider> 
         );
-
-useEffect(() => {
-    console.log ("AuthProvider ", user);
-}, [user]);
 
 export function useAuth() {
     const context = useContext(AuthContext);
