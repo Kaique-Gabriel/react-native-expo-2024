@@ -40,14 +40,9 @@ const {authUser} = useUsersDatabase();
         loadStoragedData();
     }, []);
 
-    useEffect(() =>{
-        console.log("AuthProvider", user);
-    }, [user]);
-
 };
     const signIn = async ({email, password}) => {
         const response = await authUser({email, password});
-        console.log(response);
         
         if (!response) {
             setUser({
@@ -70,10 +65,7 @@ const {authUser} = useUsersDatabase();
         await AsyncStorage.removeItem("@payment:user");
         setUser({});
     };
-    useEffect(() => {
-        console.log ("AuthProvider ", user);
-    }, [user]);
-
+    
     if (!loaded && !error) {
         return ( <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
             <Text style={{ fontSize: 28, marginTop: 15}}>
